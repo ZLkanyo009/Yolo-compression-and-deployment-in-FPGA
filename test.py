@@ -96,7 +96,7 @@ def test(net, device, testset, transform, thresh, class_colors=None, class_names
         # cv2.waitKey(0)
         # print('Saving the' + str(index) + '-th image ...')
         # cv2.imwrite('test_images/' + args.dataset+ '3/' + str(index).zfill(6) +'.jpg', img)
-
+    print("finish, generate in output/ dir")
 
 if __name__ == '__main__':
     # get device
@@ -114,7 +114,7 @@ if __name__ == '__main__':
         print('test on voc ...')
         class_names = VOC_CLASSES
         class_indexs = None
-        num_classes = 20
+        num_classes = 2
         dataset = VOCDetection(root=VOC_ROOT, image_sets=[('2007', 'test')], transform=None)
 
     elif args.dataset == 'coco-val':
@@ -130,10 +130,10 @@ if __name__ == '__main__':
 
     elif args.dataset == 'mask':
         print('test on mask ...')
-        class_names = VOC_CLASSES
+        class_names = VOC_CLASSES_mask
         class_indexs = None
         num_classes = 2
-        dataset = VOCDetection(root=VOC_ROOT, image_sets=[('2007', 'test')], transform=None)
+        dataset = VOCDetection_mask(root=VOC_ROOT_mask, image_sets=[('2007', 'test')], transform=None)
 
     class_colors = [(np.random.randint(255),np.random.randint(255),np.random.randint(255)) for _ in range(num_classes)]
 
@@ -154,9 +154,22 @@ if __name__ == '__main__':
         net = myYOLOv3Spp(device, input_size=input_size, num_classes=num_classes, conf_thresh=args.conf_thresh, nms_thresh=args.nms_thresh, anchor_size=anchor_size)
     
     elif args.version == 'slim_yolo_v2':
-        from models.slim_yolo_v2 import SlimYOLOv2 
+        from models.slim_yolo_v2 import SlimYOLOv2
         anchor_size = ANCHOR_SIZE if args.dataset == 'voc' else ANCHOR_SIZE_COCO
+        if args.dataset == 'mask':
+            anchor_size = ANCHOR_SIZE_MASK
+    
         net = SlimYOLOv2(device, input_size=input_size, num_classes=num_classes, conf_thresh=args.conf_thresh, nms_thresh=args.nms_thresh, anchor_size=anchor_size)
+        print('Let us train slim_yolo_v2 on the %s dataset ......' % (args.dataset))
+    
+    elif args.version == 'slim_yolo_v2_q_bf':
+        from models.slim_yolo_v2 import SlimYOLOv2_quantize_bnfuse
+        anchor_size = ANCHOR_SIZE if args.dataset == 'voc' else ANCHOR_SIZE_COCO
+        if args.dataset == 'mask':
+            anchor_size = ANCHOR_SIZE_MASK
+    
+        net = SlimYOLOv2_quantize_bnfuse(device, input_size=input_size, num_classes=num_classes, conf_thresh=args.conf_thresh, nms_thresh=args.nms_thresh, anchor_size=anchor_size)
+        print('Let us train slim_yolo_v2 on the %s dataset ......' % (args.dataset))
 
     elif args.version == 'tiny_yolo_v3':
         from models.tiny_yolo_v3 import YOLOv3tiny

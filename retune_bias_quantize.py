@@ -18,8 +18,9 @@ import tools
 from utils.augmentations import SSDAugmentation
 from utils.cocoapi_evaluator import COCOAPIEvaluator
 from utils.vocapi_evaluator import VOCAPIEvaluator
+from utils.vocapi_evaluator_mask import VOCAPIEvaluator_mask
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 def parse_args():
     parser = argparse.ArgumentParser(description='YOLO Detection')
@@ -194,20 +195,20 @@ def train():
                         )
     
     elif args.dataset == 'mask':
-        data_dir = VOC_ROOT
+        data_dir = VOC_ROOT_mask
         num_classes = 2
 
         #VOCDetection内部对xmin xmax等做了归一化处理
-        dataset = VOCDetection(root=data_dir, 
-                                transform=SSDAugmentation(train_size)
-                                )
+        dataset = VOCDetection_mask(root=data_dir, 
+                                    transform=SSDAugmentation(train_size)
+                                   )
 
-        evaluator = VOCAPIEvaluator(data_root=data_dir,
-                                    img_size=val_size,
-                                    device=device,
-                                    transform=BaseTransform(val_size),
-                                    labelmap=VOC_CLASSES
-                                    )
+        evaluator = VOCAPIEvaluator_mask(data_root=data_dir,
+                                         img_size=val_size,
+                                         device=device,
+                                         transform=BaseTransform(val_size),
+                                         labelmap=VOC_CLASSES_mask
+                                        )
     
     else:
         print('unknow dataset !! Only support voc and coco !!')
@@ -256,15 +257,6 @@ def train():
             anchor_size = ANCHOR_SIZE_MASK
     
         yolo_net = SlimYOLOv2(device, input_size=train_size, num_classes=num_classes, trainable=True, anchor_size=anchor_size, hr=hr)
-        print('Let us train slim_yolo_v2 on the %s dataset ......' % (args.dataset))
-    
-    elif args.version == 'slim_yolo_v2_q':
-        from models.slim_yolo_v2 import SlimYOLOv2_quantize
-        anchor_size = ANCHOR_SIZE if args.dataset == 'voc' else ANCHOR_SIZE_COCO
-        if args.dataset == 'mask':
-            anchor_size = ANCHOR_SIZE_MASK
-    
-        yolo_net = SlimYOLOv2_quantize(device, input_size=train_size, num_classes=num_classes, trainable=True, anchor_size=anchor_size, hr=hr)
         print('Let us train slim_yolo_v2 on the %s dataset ......' % (args.dataset))
     
     elif args.version == 'slim_yolo_v2_q_bf':

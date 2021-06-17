@@ -34,10 +34,10 @@ class VOCAPIEvaluator():
         self.display = display
 
         # path
-        self.devkit_path = data_root + 'Mask'
-        self.annopath = os.path.join(data_root, 'Mask', 'Annotations', '%s.xml')
-        self.imgpath = os.path.join(data_root, 'Mask', 'JPEGImages', '%s.jpg')
-        self.imgsetpath = os.path.join(data_root, 'Mask', 'ImageSets', 'Main', set_type+'.txt')
+        self.devkit_path = data_root + 'VOC' + year
+        self.annopath = os.path.join(data_root, 'VOC2007', 'Annotations', '%s.xml')
+        self.imgpath = os.path.join(data_root, 'VOC2007', 'JPEGImages', '%s.jpg')
+        self.imgsetpath = os.path.join(data_root, 'VOC2007', 'ImageSets', 'Main', set_type+'.txt')
         self.output_dir = self.get_output_dir('voc_eval/', self.set_type)
 
         # dataset
@@ -46,7 +46,7 @@ class VOCAPIEvaluator():
                                     transform=transform
                                     )
 
-    def evaluate(self, net, quantization = False, find = False):
+    def evaluate(self, net):
         net.eval()
         num_images = len(self.dataset)
         # all detections are collected into:
@@ -64,9 +64,7 @@ class VOCAPIEvaluator():
             x = Variable(im.unsqueeze(0)).to(self.device)
             t0 = time.time()
             # forward
-            # print("evaluate ima !!!!!!!!!!!")
-            # print(x)
-            bboxes, scores, cls_inds = net(x, quantization = quantization, find = find)
+            bboxes, scores, cls_inds = net(x)
             detect_time = time.time() - t0
             scale = np.array([[w, h, w, h]])
             bboxes *= scale

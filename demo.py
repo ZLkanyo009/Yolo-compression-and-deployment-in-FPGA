@@ -3,7 +3,7 @@ import os
 import torch
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
-from data import BaseTransform, VOC_CLASSES, coco_class_index, coco_class_labels
+from data import BaseTransform, VOC_CLASSES, coco_class_index, coco_class_labels, VOC_CLASSES_mask
 from data import config
 import numpy as np
 import cv2
@@ -190,7 +190,8 @@ def run():
     elif args.version == 'slim_yolo_v2_q_bf':
         from models.slim_yolo_v2 import SlimYOLOv2_quantize_bnfuse
         anchor_size = config.ANCHOR_SIZE_MASK
-    
+        
+        #mask config
         net = SlimYOLOv2_quantize_bnfuse(device, input_size=input_size, num_classes=2, conf_thresh=args.conf_thresh, nms_thresh=args.nms_thresh, anchor_size=anchor_size)
 
     elif args.version == 'tiny_yolo_v3':

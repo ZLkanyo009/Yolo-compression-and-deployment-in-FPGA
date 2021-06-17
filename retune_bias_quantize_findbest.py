@@ -18,6 +18,8 @@ import tools
 from utils.augmentations import SSDAugmentation
 from utils.cocoapi_evaluator import COCOAPIEvaluator
 from utils.vocapi_evaluator import VOCAPIEvaluator
+from utils.vocapi_evaluator_mask import VOCAPIEvaluator_mask
+
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
@@ -220,20 +222,20 @@ def train():
                         )
     
     elif args.dataset == 'mask':
-        data_dir = VOC_ROOT
+        data_dir = VOC_ROOT_mask
         num_classes = 2
 
         #VOCDetection内部对xmin xmax等做了归一化处理
-        dataset = VOCDetection(root=data_dir, 
-                                transform=SSDAugmentation(train_size)
-                                )
+        dataset = VOCDetection_mask(root=data_dir, 
+                                    transform=SSDAugmentation(train_size)
+                                   )
 
-        evaluator = VOCAPIEvaluator(data_root=data_dir,
-                                    img_size=val_size,
-                                    device=device,
-                                    transform=BaseTransform(val_size),
-                                    labelmap=VOC_CLASSES
-                                    )
+        evaluator = VOCAPIEvaluator_mask(data_root=data_dir,
+                                         img_size=val_size,
+                                         device=device,
+                                         transform=BaseTransform(val_size),
+                                         labelmap=VOC_CLASSES_mask
+                                        )
     
     else:
         print('unknow dataset !! Only support voc and coco !!')

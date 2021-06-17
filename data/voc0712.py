@@ -17,13 +17,17 @@ else:
     import xml.etree.ElementTree as ET
 
 VOC_CLASSES = (  # always index 0
-    'face', 'face_mask')
+    'aeroplane', 'bicycle', 'bird', 'boat',
+    'bottle', 'bus', 'car', 'cat', 'chair',
+    'cow', 'diningtable', 'dog', 'horse',
+    'motorbike', 'person', 'pottedplant',
+    'sheep', 'sofa', 'train', 'tvmonitor')
 
 # note: if you used our download scripts, this should be right
 path_to_dir = osp.dirname(osp.abspath(__file__))
 VOC_ROOT = path_to_dir + "/VOCdevkit/"
 
-VOC_ROOT = "/home/zldlg/yolov2-yolov3_PyTorch/dataset/VOC/VOCdevkit/"
+VOC_ROOT = "/home/zldlg/FPGA-Yolov2/dataset/VOC/VOCdevkit/"
 
 
 class VOCAnnotationTransform(object):
@@ -42,8 +46,6 @@ class VOCAnnotationTransform(object):
     def __init__(self, class_to_ind=None, keep_difficult=False):
         self.class_to_ind = class_to_ind or dict(
             zip(VOC_CLASSES, range(len(VOC_CLASSES))))
-        #print("!!!!!!!!!!!!!!!!!!!")
-        #print(self.class_to_ind)
         self.keep_difficult = keep_difficult
 
     def __call__(self, target, width, height):
@@ -60,22 +62,17 @@ class VOCAnnotationTransform(object):
             if not self.keep_difficult and difficult:
                 continue
             name = obj.find('name').text.lower().strip()
-            #print(name)
             bbox = obj.find('bndbox')
-
 
             pts = ['xmin', 'ymin', 'xmax', 'ymax']
             bndbox = []
-            #print(bbox)
             for i, pt in enumerate(pts):
-                #print(bbox.find(pt).text)
-                cur_pt = int(bbox.find(pt).text) - 1 #question 为什么剪1 ？ 
+                cur_pt = int(bbox.find(pt).text) - 1
                 # scale height or width
                 cur_pt = cur_pt / width if i % 2 == 0 else cur_pt / height
                 bndbox.append(cur_pt)
             label_idx = self.class_to_ind[name]
             bndbox.append(label_idx)
-            #print(bndbox)
             res += [bndbox]  # [xmin, ymin, xmax, ymax, label_ind]
             # img_id = target.find('filename').text[:-4]
 
@@ -102,7 +99,7 @@ class VOCDetection(data.Dataset):
     def __init__(self, root,
                  image_sets=[('2007', 'train')],
                  transform=None, target_transform=VOCAnnotationTransform(),
-                 dataset_name='Mask'):
+                 dataset_name='VOC0712'):
         self.root = root
         self.image_set = image_sets
         self.transform = transform
@@ -112,11 +109,10 @@ class VOCDetection(data.Dataset):
         self._imgpath = osp.join('%s', 'JPEGImages', '%s.jpg')
         self.ids = list()
         for (year, name) in image_sets:
-            rootpath = osp.join(self.root, 'Mask')
-            print(osp.join(rootpath, 'ImageSets', 'Main', name + '.txt'))
+            rootpath = osp.join(self.root, 'VOC' + year)
             for line in open(osp.join(rootpath, 'ImageSets', 'Main', name + '.txt')):
                 self.ids.append((rootpath, line.strip()))
-                
+
     def __getitem__(self, index):
         im, gt, h, w = self.pull_item(index)
 
@@ -136,20 +132,16 @@ class VOCDetection(data.Dataset):
         height, width, channels = img.shape
 
         if self.target_transform is not None:
-            #将数据集内各种大小不同的图片对应的x y进行归一化，以作统一
-            #target -> [[xmin, ymin, xmax, ymax, label_ind], ... ]
             target = self.target_transform(target, width, height)
 
         if self.transform is not None:
+
             target = np.array(target)
-
-            # 将img改成统一固定的size，同时作各种变换（翻转、裁剪等等）
             img, boxes, labels = self.transform(img, target[:, :4], target[:, 4])
-
             # to rgb
             img = img[:, :, (2, 1, 0)]
+            # img = img.transpose(2, 0, 1)
             target = np.hstack((boxes, np.expand_dims(labels, axis=1)))
-
         return torch.from_numpy(img).permute(2, 0, 1), target, height, width
         # return torch.from_numpy(img), target, height, width
 
