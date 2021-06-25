@@ -201,11 +201,16 @@ class VOCAPIEvaluator():
         if use_07_metric:
             # 11 point metric
             ap = 0.
+            print("=============rec=============")
+            print(rec)
+            print("=============prec=============")
+            print(prec)
             for t in np.arange(0., 1.1, 0.1):
                 if np.sum(rec >= t) == 0:
                     p = 0
                 else:
                     p = np.max(prec[rec >= t])
+                print(p)
                 ap = ap + p / 11.
         else:
             # correct AP calculation

@@ -14,7 +14,7 @@
 - numpy
 - opencv
 
-# How to Run?
+# Dataset
 将数据集软连接到该文件夹的dataset下
 
 example: 
@@ -46,7 +46,7 @@ python conv+bn2conv.py -d mask --cuda -v slim_yolo_v2 -r your_weight_path
 ```
 BN融合后微调精度：
 ```Shell
-python retune_bias_quantize.py -d mask --cuda -v slim_yolo_v2_q_bf -q -r your_weight_path
+python retune_bias_quantize.py -d mask --cuda -v slim_yolo_v2_q_bf -r your_weight_path
 ```
 FPGA模拟量化：
 ```Shell
