@@ -75,10 +75,12 @@ def detect(net, device, transform, thresh, mode='image', path_to_img=None, path_
             x = torch.from_numpy(transform(frame)[0][:, :, (2, 1, 0)]).permute(2, 0, 1)
             x = x.unsqueeze(0).to(device)
 
-            torch.cuda.synchronize()
+            if "cuda" in device:
+                torch.cuda.synchronize()
             t0 = time.time()
             detections = net(x)      # forward pass
-            torch.cuda.synchronize()
+            if "cuda" in device:
+                torch.cuda.synchronize()
             t1 = time.time()
             print("detection time used ", t1-t0, "s")
             # scale each detection back up to the image
@@ -199,8 +201,12 @@ def run():
         anchor_size = config.TINY_MULTI_ANCHOR_SIZE_COCO
 
         net = YOLOv3tiny(device, input_size=input_size, num_classes=80, conf_thresh=args.conf_thresh, nms_thresh=args.nms_thresh, anchor_size=anchor_size)
-    
-    net.load_state_dict(torch.load(args.trained_model, map_location='cuda'))
+    else:
+        print('Unknown version !!!')
+        exit()
+
+
+    net.load_state_dict(torch.load(args.trained_model, map_location=device))
     net.to(device).eval()
     print('Finished loading model!')
 

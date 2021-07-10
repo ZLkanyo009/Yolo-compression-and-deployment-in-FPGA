@@ -66,5 +66,5 @@ python test.py -v slim_yolo_v2_q_bf -d mask --cuda --trained_model your_weight_p
 ```
 # Detection
 ```Shell
-python demo.py -v yolo_v2_q_bf --mode camera --trained_model your_weight_path
+python demo.py -v slim_yolo_v2_q_bf --mode camera --trained_model your_weight_path
 ```
