@@ -1,2 +1,6 @@
 {
+    "files.associations": {
+        "weight.h": "c",
+        "ov7670.h": "c"
+    }
 }
